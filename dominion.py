@@ -49,6 +49,19 @@ class Player:
         else:
             print("Card not found in hand.")
 
+    def buy_card(self, card_name, supply):
+    # Buy a card from supply
+        if card_name in supply:
+            if len(supply[card_name]) > 0:
+                bought_card = supply[card_name].pop()
+                self.purchased_cards.append(bought_card)
+                self.resources -= bought_card.cost
+                print(f"Player {self.name} bought {bought_card.name} for {bought_card.cost} coins.")
+            else:
+                print(f"Card {card_name} is out of stock.")
+        else:
+            print(f"Card {card_name} is not available.")
+
 # Initialize Cards
 cards = {
     'Copper': Card('Copper', 0, 'Treasure', {'coins': 1}),
@@ -100,20 +113,32 @@ def player_turn(player, supply):
     print_game_state(players, supply)
 
     while player.actions > 0:
-        print(f"{player.name}, choose an action card to play or 'pass': ")
+        print(f"{player.name}, choose an action card to 'play' or 'pass': ")
         action_card = input()
         if action_card == 'pass':
             break
+
         player.play_card(action_card, supply)
         player.actions -= 1
 
     while player.buys > 0:
-        print(f"{player.name}, choose a card to buy or 'pass': ")
+        print(f"{player.name}, choose a card to 'buy' or 'pass': ")
         buy_card = input()
         if buy_card == 'pass':
             break
+
+        player.buy_card(buy_card, supply)  # Pass card_name to buy_card function
         player.buys -= 1
-        player.discard_pile.append(supply[buy_card].pop())
+
+    # Cleanup phase - discard hand, draw new hand
+    player.discard_pile.extend(player.hand)
+    player.hand = []
+    player.draw(5)
+
+    # Cleanup phase - discard hand, draw new hand
+    player.discard_pile.extend(player.hand)
+    player.hand = []
+    player.draw(5)
 
     # Cleanup phase - discard hand, draw new hand
     player.discard_pile.extend(player.hand)
